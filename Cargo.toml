@@ -1,0 +1,50 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/lumbridge-library-legacy",
+    "crates/lumbridge-library-core",
+    "crates/lumbridge-libraryd",
+    "crates/lumbridge-library-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+license = "Apache-2.0"
+repository = "https://github.com/lumbridge-corp/lumbridge-library"
+homepage = "https://lumbridgecorp.com"
+publish = false
+
+[workspace.dependencies]
+base64 = "0.22"
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "time", "fs", "process", "sync", "io-util"] }
+axum = "0.8"
+reqwest = { version = "0.13", default-features = false, features = ["json", "query"] }  # plain http: loopback or a private network only
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "macros", "migrate", "chrono", "uuid", "json"] }
+rmcp = { version = "3.9", features = ["server", "macros", "transport-streamable-http-server"] }
+schemars = { version = "1", features = ["uuid1", "chrono04"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+blake3 = "1"
+futures-util = "0.3"
+sha2 = "0.10"
+tempfile = "3"
+# warehouse: tree-sitter core + grammars (all on tree-sitter-language 0.1, ABI 14/15)
+tree-sitter = "0.27"
+tree-sitter-rust = "0.24"
+tree-sitter-python = "0.25"
+tree-sitter-typescript = "0.23"
+tree-sitter-javascript = "0.25"
+tree-sitter-go = "0.25"
+tree-sitter-c = "0.24"
+tree-sitter-cpp = "0.23"
+tree-sitter-bash = "0.25"
+tree-sitter-java = "0.23"

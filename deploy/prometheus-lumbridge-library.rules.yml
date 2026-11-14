@@ -1,0 +1,37 @@
+# Prometheus alert rules for lumbridge-libraryd. Scrape GET /metrics (no auth) under the job name
+# `lumbridge-library`, or change the `job` label below to match your scrape config.
+groups:
+  - name: library
+    rules:
+      - alert: LibraryDown
+        expr: up{job="lumbridge-library"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "lumbridge-libraryd is not answering /metrics"
+          description: "Agents' library tools and the CLIs are down. systemctl --user status lumbridge-libraryd; journalctl --user -u lumbridge-libraryd."
+      - alert: LibraryDbDown
+        expr: library_db_up == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "lumbridge-libraryd cannot reach Postgres"
+          description: "Check the database and DATABASE_URL in ~/.config/lumbridge-library/db.env."
+      - alert: LibraryModelsDown
+        expr: library_embed_up == 0 or library_rerank_up == 0
+        for: 20m
+        labels:
+          severity: warning
+        annotations:
+          summary: "lumbridge-libraryd: the embed or rerank endpoint has been down for 20 min"
+          description: "Search falls back to full text only. Check the model servers named in [embed] and [rerank]."
+      - alert: LibraryEmbedBacklogStuck
+        expr: sum(library_unembedded_chunks) > 0 and sum(delta(library_unembedded_chunks[1h])) >= 0 and sum(library_unembedded_chunks offset 1h) > 0
+        for: 2h
+        labels:
+          severity: info
+        annotations:
+          summary: "lumbridge-libraryd embed backlog not shrinking for 2 h ({{ $value }} chunks)"
+          description: "New text is not becoming searchable by meaning. Check the lumbridge-libraryd logs for 'embed:' warnings."

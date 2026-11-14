@@ -1,0 +1,44 @@
+[package]
+name = "lumbridge-library-core"
+description = "Lumbridge Library engines: docs (Markdown vault) and warehouse (code), hybrid search over Postgres, the librarian."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
+
+[dependencies]
+lumbridge-library-legacy = { path = "../lumbridge-library-legacy" }
+anyhow.workspace = true
+base64.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+tokio = { workspace = true, features = ["process", "io-util", "sync"] }
+reqwest.workspace = true
+sqlx.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+blake3.workspace = true
+schemars.workspace = true
+uuid.workspace = true
+futures-util.workspace = true
+regex = "1"
+serde_yaml_ng = "0.10"   # maintained fork of serde_yaml (frontmatter)
+sha2.workspace = true
+walkdir = "2.5"
+tree-sitter.workspace = true
+tree-sitter-rust.workspace = true
+tree-sitter-python.workspace = true
+tree-sitter-typescript.workspace = true
+tree-sitter-javascript.workspace = true
+tree-sitter-go.workspace = true
+tree-sitter-c.workspace = true
+tree-sitter-cpp.workspace = true
+tree-sitter-bash.workspace = true
+tree-sitter-java.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

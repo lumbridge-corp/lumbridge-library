@@ -1,0 +1,23 @@
+# systemd user unit: ~/.config/systemd/user/lumbridge-libraryd.service (deploy/install.sh copies it).
+# The daemon finds its config in ~/.config/lumbridge-library/lumbridge-libraryd.toml; DATABASE_URL and
+# READER_DATABASE_URL come from db.env next to it (0600). The second EnvironmentFile is the folder
+# earlier releases used; with both present, the lumbridge-library one wins (read last).
+[Unit]
+Description=Lumbridge Library (lumbridge-libraryd): Lumbridge Docs + Lumbridge Warehouse
+After=network-online.target
+
+[Service]
+EnvironmentFile=-%h/.config/library/db.env
+EnvironmentFile=-%h/.config/lumbridge-library/db.env
+ExecStart=%h/.local/bin/lumbridge-libraryd
+Restart=always
+RestartSec=5
+# The daemon itself stays small (~60 MB); the rest is page cache and short git children (index-pack
+# on big clones). MemoryHigh throttles and reclaims, MemoryMax kills. Raise both if you mirror very
+# large repositories.
+MemoryHigh=512M
+MemoryMax=1G
+Environment=RUST_LOG=lumbridge_libraryd=info,lumbridge_library_core=info
+
+[Install]
+WantedBy=default.target

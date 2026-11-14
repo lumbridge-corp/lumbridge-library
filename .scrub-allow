@@ -1,0 +1,14 @@
+# Accepted hits of scripts/scrub-check. One entry per line: <path glob>:<regex>
+# The matching text is cut from lines of matching files before the check, so
+# an entry allows exactly that text and nothing else on the line.
+# Every entry has its reason above it. Keep the list short.
+
+# The daemon's name (binary, crate, unit, log target).
+*:lumbridge[-_]libraryd
+
+# Names earlier releases used, still read as fallbacks: the daemon's config file name and its log
+# target. They live in the legacy crate only (and its tests).
+crates/lumbridge-library-legacy/src/lib.rs:\blibraryd(\.toml|=info|_extra=info)?\b
+
+# Git remote URL shapes in unit tests of the URL parser.
+crates/lumbridge-library-core/src/warehouse/*.rs:\b(git|user|pw)@github\.com\b

@@ -1,0 +1,45 @@
+# Runs scripts/ci.sh: the scrub check, clippy and the tests, with a scratch Postgres (pgvector) so
+# the database suites run too. GitHub-hosted runner, no secrets, actions and images pinned.
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      RUST_VERSION: 1.97.1
+    services:
+      postgres:
+        image: pgvector/pgvector@sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8 # pg17
+        env:
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: library
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Rust
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --component clippy
+          rustup default "$RUST_VERSION"
+      - name: Database (deploy/db-setup.sql)
+        env:
+          PGPASSWORD: ci-only
+        run: psql -h 127.0.0.1 -U postgres -d library -v ON_ERROR_STOP=1 -v wpw=ci-writer -v rpw=ci-reader -f deploy/db-setup.sql
+      - name: Checks (scripts/ci.sh)
+        env:
+          TEST_DATABASE_URL: postgres://lib_writer:ci-writer@127.0.0.1:5432/library
+        run: scripts/ci.sh

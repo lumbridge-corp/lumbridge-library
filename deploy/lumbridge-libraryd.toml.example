@@ -1,0 +1,70 @@
+# Lumbridge Library daemon config: ~/.config/lumbridge-library/lumbridge-libraryd.toml
+# (or --config FILE, or $LUMBRIDGE_LIBRARYD_CONFIG). Secrets are not in this file: DATABASE_URL and
+# READER_DATABASE_URL come from the environment (db.env next to this file, read by the systemd
+# unit), and the tokens from the files named below (0600, at least 32 characters).
+# Paths must be absolute. Replace /home/you with your home folder.
+
+listen = "127.0.0.1:8830"                # plain HTTP: loopback, or a private network you trust
+# allowed_hosts = ["localhost", "127.0.0.1", "library.example.internal"]  # Host names MCP clients
+                                         # may use; default: loopback plus the address in `listen`
+api_token_file = "/home/you/.config/lumbridge-library/token"
+admin_token_file = "/home/you/.config/lumbridge-library/admin-token"  # owner-only REST actions; omit to turn them off
+library_root = "/home/you/lumbridge-library"  # vault/, warehouse/{mirrors,own,components,systems}, attachments/, datasets/
+
+[identity]
+owner = "sam"                            # your author name: `author: sam` pages are never edited by agents
+agents = ["agent", "claude"]             # author names agents write under (MCP clients map onto these by name)
+librarian = "librarian"                  # author name of the librarian's edits
+git_name = "lumbridge-library"           # identity of the daemon's git commits
+git_email = "lumbridge-library@localhost"
+design_license = "LicenseRef-private"    # SPDX id recorded for your own design write-ups
+
+[embed]                                  # OpenAI-compatible /v1/embeddings
+base_url = "http://127.0.0.1:8012/v1"
+model = "embed"
+dims = 2048                              # the schema stores halfvec(2048); other sizes need a migration
+query_prefix = "query: "                 # "" for models trained without instruction prefixes
+passage_prefix = "passage: "
+
+[rerank]                                 # OpenAI-compatible /v1/rerank (vLLM, or compatible)
+base_url = "http://127.0.0.1:8015/v1"
+model = "rerank"
+
+[vault]                                  # {library_root}/vault is a checkout of this remote
+remote = "git@git.example.com:me/vault.git"
+branch = "main"
+push = true                              # agent writes are committed and pushed at once
+
+# [gitea]                                # optional: components and designs become repos in one org
+# api_base = "http://127.0.0.1:3000"
+# token_file = "/home/you/.config/lumbridge-library/gitea-token"
+# ssh_host = "git.example.com"           # host or ~/.ssh/config alias for pushes
+# component_org = "warehouse"
+
+[clipper]                                # REST/CLI only; MCP clips must carry their own text
+python = "/home/you/lumbridge-library/.venv/bin/python"
+script = "/home/you/.local/share/lumbridge-library/extract.py"
+
+[jobs]                                   # seconds; 0 disables
+vault_sync_secs = 60                     # git pull + sync (cheap when nothing changed)
+embed_secs = 20                          # embed backlog, both shelves
+mirror_sync_secs = 86400                 # fetch + incremental reindex of every repo
+lint_secs = 86400
+embed_batch = 256
+
+[librarian]                              # upkeep agent: facts, orphan links, duplicates, staleness, evals
+enabled = false                          # true = nightly run at nightly_hour (on-demand runs work either way)
+base_url = "http://127.0.0.1:8000/v1"    # OpenAI-compatible chat model; keep it local if clippings must stay private
+model = "local"
+nightly_hour = 3                         # local time
+dry_run = true                           # report only; set false to let it write facts and links
+max_edits_per_run = 20
+max_facts_per_run = 500
+max_llm_calls = 60
+stale_days = 45
+timeout_secs = 120
+
+# [designs]                              # optional: captions for design screenshots
+# vision_base_url = "http://127.0.0.1:8018/v1"   # OpenAI-compatible vision chat model; unset = no captions
+# vision_model = "vision"
+# caption_secs = 300
