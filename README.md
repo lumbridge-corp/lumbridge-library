@@ -1,3 +1,5 @@
+![Lumbridge Library: What your team knows, with sources.](docs/assets/banner.jpg)
+
 # Lumbridge Library
 
 A private library for one person and their agents: a docs shelf (a Markdown vault in git, with
